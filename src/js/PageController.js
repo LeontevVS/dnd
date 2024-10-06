@@ -10,7 +10,7 @@ export default class PageController {
     this.shiftY = null;
     this.dragEl = null;
     this.cloneEl = null;
-    this.placeholderEl = null;  // Placeholder элемент
+    this.placeholderEl = null;
     this.toDo = null;
     this.inProgress = null;
     this.done = null;
@@ -191,7 +191,6 @@ export default class PageController {
 
     this.dragEl.classList.add('hidden');
 
-
     this.cloneEl.style.left = `${event.clientX - this.shiftX}px`;
     this.cloneEl.style.top = `${event.clientY - this.shiftY}px`;
   }
@@ -239,12 +238,10 @@ export default class PageController {
     const targetCard = targetPos ? targetPos.closest('.card') : null;
     const targetColumn = targetPos ? targetPos.closest('.cards') : null;
 
-    // Проверка: если находимся в другом столбце, переносим placeholder
     if (targetColumn && targetColumn !== this.placeholderEl.parentElement) {
       targetColumn.appendChild(this.placeholderEl);
     }
 
-    // Обновление положения placeholder между карточками
     if (targetCard && targetCard !== this.dragEl && targetCard !== this.placeholderEl) {
       const targetParent = targetCard.parentElement;
       if (newY < targetCard.getBoundingClientRect().top) {
@@ -255,7 +252,7 @@ export default class PageController {
     }
   }
 
-  finishDrag(event) {
+  finishDrag() {
     if (!this.dragEl) {
       return;
     }

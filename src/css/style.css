@@ -195,6 +195,6 @@ body {
   background-color: #f0f0f0;
   box-sizing: border-box;
   border: 2px dashed #ccc;
-  height: 100%; /* Будет заменено на конкретную высоту карточки через JS */
+  height: 100%;
   margin: 5px 0;
 }
