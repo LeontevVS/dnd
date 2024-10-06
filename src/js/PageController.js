@@ -10,6 +10,7 @@ export default class PageController {
     this.shiftY = null;
     this.dragEl = null;
     this.cloneEl = null;
+    this.placeholderEl = null;  // Placeholder элемент
     this.toDo = null;
     this.inProgress = null;
     this.done = null;
@@ -180,8 +181,16 @@ export default class PageController {
     this.cloneEl.style.width = `${this.dragEl.offsetWidth}px`;
     this.cloneEl.style.height = `${this.dragEl.offsetHeight}px`;
     this.cloneEl.classList.add('dragged');
-    this.dragEl.classList.add('hidden');
     document.body.append(this.cloneEl);
+
+    this.placeholderEl = document.createElement('div');
+    this.placeholderEl.classList.add('placeholder');
+    this.placeholderEl.style.width = `${this.dragEl.offsetWidth}px`;
+    this.placeholderEl.style.height = `${this.dragEl.offsetHeight}px`;
+    this.dragEl.parentElement.insertBefore(this.placeholderEl, this.dragEl);
+
+    this.dragEl.classList.add('hidden');
+
 
     this.cloneEl.style.left = `${event.clientX - this.shiftX}px`;
     this.cloneEl.style.top = `${event.clientY - this.shiftY}px`;
@@ -225,29 +234,35 @@ export default class PageController {
 
     this.cloneEl.style.left = `${newX}px`;
     this.cloneEl.style.top = `${newY}px`;
+
+    const targetPos = document.elementFromPoint(event.clientX, event.clientY);
+    const targetCard = targetPos ? targetPos.closest('.card') : null;
+    const targetColumn = targetPos ? targetPos.closest('.cards') : null;
+
+    // Проверка: если находимся в другом столбце, переносим placeholder
+    if (targetColumn && targetColumn !== this.placeholderEl.parentElement) {
+      targetColumn.appendChild(this.placeholderEl);
+    }
+
+    // Обновление положения placeholder между карточками
+    if (targetCard && targetCard !== this.dragEl && targetCard !== this.placeholderEl) {
+      const targetParent = targetCard.parentElement;
+      if (newY < targetCard.getBoundingClientRect().top) {
+        targetParent.insertBefore(this.placeholderEl, targetCard);
+      } else {
+        targetParent.insertBefore(this.placeholderEl, targetCard.nextSibling);
+      }
+    }
   }
 
   finishDrag(event) {
     if (!this.dragEl) {
       return;
     }
-    const targetPos = document.elementFromPoint(event.clientX, event.clientY);
 
-    if (!targetPos) {
-      this.endingDrag();
-      return;
-    }
-
-    const targetCards = targetPos.closest('.cards');
-
-    if (targetCards === null) {
-      this.dragEl.parentElement.append(this.dragEl);
-    } else if (targetCards && targetCards === targetPos) {
-      targetCards.append(this.dragEl);
-    } else if (targetCards && targetCards !== targetPos) {
-      const card = targetPos.closest('.card');
-      card.after(this.dragEl);
-    }
+    const targetParent = this.placeholderEl.parentElement;
+    targetParent.insertBefore(this.dragEl, this.placeholderEl);
+    this.placeholderEl.remove();
     this.endingDrag();
   }
 
@@ -263,5 +278,6 @@ export default class PageController {
     this.dragEl.classList.remove('hidden');
     this.dragEl = null;
     this.cloneEl = null;
+    this.placeholderEl = null;
   }
 }
